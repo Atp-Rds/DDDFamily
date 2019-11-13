@@ -11,3 +11,6 @@ By atpRads, based on
 
 This is a simple project which shows how to define a DDD persistence factory, depending on Bounded Context (using Aggregate Roots).
 
+# Dependencies
+
+mORMot framework by Synopse: https://synopse.info/fossil/wiki?name=SQLite3+Framework
