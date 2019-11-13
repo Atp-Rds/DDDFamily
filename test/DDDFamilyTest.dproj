@@ -77,12 +77,16 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="..\dom\DomFamilyTypes.pas"/>
-        <DCCReference Include="..\dom\DomFamilyCQRS.pas"/>
+        <DCCReference Include="..\dom\DomMotherCQRS.pas"/>
+        <DCCReference Include="..\dom\DomFatherCQRS.pas"/>
         <DCCReference Include="..\dom\DomSonCQRS.pas"/>
+        <DCCReference Include="..\dom\DomFamilyCQRS.pas"/>
         <DCCReference Include="..\infra\InfraFamilyTypes.pas"/>
         <DCCReference Include="..\infra\InfraFamilyTest.pas"/>
-        <DCCReference Include="..\infra\InfraFamilyRepository.pas"/>
+        <DCCReference Include="..\infra\InfraMotherRepository.pas"/>
+        <DCCReference Include="..\infra\InfraFatherRepository.pas"/>
         <DCCReference Include="..\infra\InfraSonRepository.pas"/>
+        <DCCReference Include="..\infra\InfraFamilyRepository.pas"/>
         <DCCReference Include="TestAllMain.pas"/>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>

@@ -11,14 +11,18 @@ uses
 
   //Domain
   DomFamilyTypes in '..\dom\DomFamilyTypes.pas',
-  DomFamilyCQRS in '..\dom\DomFamilyCQRS.pas',
+  DomMotherCQRS in '..\dom\DomMotherCQRS.pas',
+  DomFatherCQRS in '..\dom\DomFatherCQRS.pas',
   DomSonCQRS in '..\dom\DomSonCQRS.pas',
+  DomFamilyCQRS in '..\dom\DomFamilyCQRS.pas',
 
   //Infraestructure
   InfraFamilyTypes in '..\infra\InfraFamilyTypes.pas',
   InfraFamilyTest in '..\infra\InfraFamilyTest.pas',
-  InfraFamilyRepository in '..\infra\InfraFamilyRepository.pas',
+  InfraMotherRepository in '..\infra\InfraMotherRepository.pas',
+  InfraFatherRepository in '..\infra\InfraFatherRepository.pas',
   InfraSonRepository in '..\infra\InfraSonRepository.pas',
+  InfraFamilyRepository in '..\infra\InfraFamilyRepository.pas',
 
   //Tests
   {$I Test.inc}
@@ -54,14 +58,18 @@ end.
 //
 //  //Domain
 //  DomFamilyTypes in '..\dom\DomFamilyTypes.pas',
-//  DomFamilyCQRS in '..\dom\DomFamilyCQRS.pas',
+//  DomMotherCQRS in '..\dom\DomMotherCQRS.pas',
+//  DomFatherCQRS in '..\dom\DomFatherCQRS.pas',
 //  DomSonCQRS in '..\dom\DomSonCQRS.pas',
+//  DomFamilyCQRS in '..\dom\DomFamilyCQRS.pas',
 //
 //  //Infraestructure
 //  InfraFamilyTypes in '..\infra\InfraFamilyTypes.pas',
 //  InfraFamilyTest in '..\infra\InfraFamilyTest.pas',
-//  InfraFamilyRepository in '..\infra\InfraFamilyRepository.pas',
+//  InfraMotherRepository in '..\infra\InfraMotherRepository.pas',
+//  InfraFatherRepository in '..\infra\InfraFatherRepository.pas',
 //  InfraSonRepository in '..\infra\InfraSonRepository.pas',
+//  InfraFamilyRepository in '..\infra\InfraFamilyRepository.pas',
 //
 //  //Tests
 //  {$I Test.inc}

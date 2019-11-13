@@ -13,10 +13,17 @@ uses
   SynTable, // for TSynValidate*, TSynFilter*
   SynTests,
 
+  DomMotherCQRS,
+  DomFatherCQRS,
+  DomSonCQRS,
   DomFamilyCQRS,
   DomFamilyTypes,
 
-  InfraFamilyTypes;
+  InfraFamilyTypes,
+  InfraMotherRepository,
+  InfraFatherRepository,
+  InfraSonRepository;
+
 
 type
 
@@ -31,7 +38,7 @@ type
     fSon_Father: RawUTF8; // TFatherName
   published
     /// maps TFamily.FamilyName (TFamilyName)
-    property FamilyName: RawUTF8 read fFamilyName write fFamilyName;
+    property FamilyName: RawUTF8 read fFamilyName write fFamilyName stored AS_UNIQUE;
     /// maps TFamily.Mother.Name (TMotherName)
     property Mother: RawUTF8 read fMother write fMother;
     /// maps TFamily.Father.Name (TFatherName)
@@ -67,8 +74,8 @@ type
   public
     constructor Create(aRest: TSQLRest; aOwner: TDDDRepositoryRestManager=nil); reintroduce;
     class procedure RegressionTests(test: TSynTestCase);
-    class procedure RegressionTestsToSQLite3(test: TSynTestCase);
-    class procedure RegressionTestsToSQLite3InfraNested(test: TSynTestCase);
+    class procedure RegressionTestsToSQLite3(test: TSynTestCase; infraNested : boolean);
+
   end;
 
 implementation
@@ -179,7 +186,7 @@ begin
       Check(1 = cmd.GetCount);
       Check(cqrsSuccess = cmd.GetNext(entity));
 
-      entity.FamilyName := 'hello';
+      entity.FamilyName := 'Hello1';
       Check(cqrsSuccess = cmd.Update(entity));
       Check(cqrsSuccess = cmd.Commit);
     finally
@@ -198,6 +205,7 @@ const
   MAX = MAX_INFRA_RTESTS_LOOP;
 var
   cmd: IDomFamilyCommand;
+  cmd4: IDomSonCommand;
   //qry: IDomFamilyQuery;
   entity: TFamily;
 
@@ -209,6 +217,7 @@ var
   i: Integer;
   //entityCount: Integer;
   iText: RawUTF8;
+  aPrefix: RawUTF8;
 begin
   with test do
   begin
@@ -219,17 +228,31 @@ begin
     entity4 := TSon.Create;
 
     Check(Rest.Services.Resolve(IDomFamilyCommand, cmd));
+    Check(Rest.Services.Resolve(IDomSonCommand, cmd4));
     try
+      aPrefix:='Hello';
       for i := 1 to MAX do
       begin
         UInt32ToUtf8(i,iText);
         entity.FamilyName := 'Family' + iText;
-        entity2.Name := 'Mother' + iText;
-        entity3.Name := 'Father' + iText;
-        entity4.Name := 'Son' + iText;
-        entity4.AssignParents(entity2,entity3);
+
+           // Get Mother
+        Check(cqrsSuccess = cmd4.SelectAllBySonName(aPrefix+'Son'+iText));
+        Check(1 = cmd4.GetCount);
+        Check(cqrsSuccess = cmd4.GetNext(entity4));
+
+//        entity2.Name := 'Mother' + iText;
+//        entity3.Name := 'Father' + iText;
+//        entity4.Name := 'Son' + iText;
+        entity4.Mother.Assign( entity2 );
+        entity4.Father.Assign( entity3 );
+
+//        entity4.AssignParents(entity2,entity3);
         entity.AssignMembers(entity2,entity3,entity4);
         Check(cqrsSuccess = cmd.Add(entity));
+
+        if aPrefix<>''
+          then aPrefix:='';
       end;
       Check(cqrsSuccess = cmd.Commit);
 
@@ -251,9 +274,14 @@ begin
       Check(1 = cmd.GetCount);
       Check(cqrsSuccess = cmd.GetNext(entity));
 
-      entity.FamilyName := 'hello';
+      entity.FamilyName := 'Hello1';
       Check(cqrsSuccess = cmd.Update(entity));
       Check(cqrsSuccess = cmd.Commit);
+
+           /// Change Mother Name, apply to all aggregates
+
+
+
     finally
       ObjArrayClear(entitys);
       entity2.Free;
@@ -297,7 +325,7 @@ begin
   end;
 end;
 
-class procedure TInfraRepoFamilyFactory.RegressionTestsToSQLite3(test: TSynTestCase);
+class procedure TInfraRepoFamilyFactory.RegressionTestsToSQLite3(test: TSynTestCase; infraNested : boolean);
 var
   aStore: TSynConnectionDefinition;
   RestServer: TSQLRest;
@@ -312,7 +340,10 @@ begin
                 '"ServerName": "'+aSQLite3DBFile+'"' +
               '}'));
 
-  RestServer := TSQLRestExternalDBCreate( TSQLModel.Create([TSQLRecordFamily]), aStore, false, []);
+  if infraNested
+    then RestServer := TSQLRestExternalDBCreate( TSQLModel.Create([TSQLRecordMother,TSQLRecordFather,TSQLRecordSon,TSQLRecordFamily]), aStore, false, [])
+    else RestServer := TSQLRestExternalDBCreate( TSQLModel.Create([TSQLRecordFamily]), aStore, false, []);
+
   RestServer.Model.Owner := RestServer;
   try
 
@@ -324,43 +355,16 @@ begin
       end;
 
     RestServer.ServiceContainer.InjectResolver([TInfraRepoFamilyFactory.Create(RestServer)],true);
-    TestOne(test,RestServer); // sub function will ensure that all I*Command are released
 
-  finally
-    aStore.Free;
-    RestServer.Free;
-  end;
+    if infraNested then begin
+      RestServer.ServiceContainer.InjectResolver([TInfraRepoMotherFactory.Create(RestServer)],true);
+      RestServer.ServiceContainer.InjectResolver([TInfraRepoFatherFactory.Create(RestServer)],true);
+      RestServer.ServiceContainer.InjectResolver([TInfraRepoSonFactory.Create(RestServer)],true);
+    end;
 
-end;
-
-class procedure TInfraRepoFamilyFactory.RegressionTestsToSQLite3InfraNested(test: TSynTestCase);
-var
-  aStore: TSynConnectionDefinition;
-  RestServer: TSQLRest;
-  aSQLite3DBFile: String;
-begin
-
-  aSQLite3DBFile := SQLITE3_DBTESTFILE;
-
-  // use a local SQlite3 database file
-  aStore := TSynConnectionDefinition.CreateFromJSON(StringToUtf8(
-              '{	"Kind": "TSQLRestServerDB", '+
-                '"ServerName": "'+aSQLite3DBFile+'"' +
-              '}'));
-
-  RestServer := TSQLRestExternalDBCreate( TSQLModel.Create([TSQLRecordFamily]), aStore, false, []);
-  RestServer.Model.Owner := RestServer;
-  try
-
-    if RestServer is TSQLRestServerDB then
-      with TSQLRestServerDB(RestServer) do begin // may be a client in settings :)
-        DB.Synchronous := smOff; // faster exclusive access to the file
-        DB.LockingMode := lmExclusive;
-        CreateMissingTables;     // will create the tables, if necessary
-      end;
-
-    RestServer.ServiceContainer.InjectResolver([TInfraRepoFamilyFactory.Create(RestServer)],true);
-    TestOneNested(test,RestServer); // sub function will ensure that all I*Command are released
+    if not infraNested
+      then TestOne(test,RestServer)  // sub function will ensure that all I*Command are released
+      else TestOneNested(test,RestServer); // sub function will ensure that all I*Command are released
 
   finally
     aStore.Free;

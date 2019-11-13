@@ -138,8 +138,8 @@ end;
 
 initialization
   TJSONSerializer.RegisterObjArrayForJSON([
-//    TypeInfo(TMotherObjArray), TMother,
-//    TypeInfo(TFatherObjArray), TFather,
+    TypeInfo(TMotherObjArray), TMother,
+    TypeInfo(TFatherObjArray), TFather,
     TypeInfo(TSonObjArray), TSon,
     TypeInfo(TFamilyObjArray), TFamily
   ]);

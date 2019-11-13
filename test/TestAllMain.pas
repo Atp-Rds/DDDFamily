@@ -21,6 +21,8 @@ implementation
 
 procedure TTestAllMain.Infrastructure;
 begin
+  AddCase([TTestMotherInfraestructure]);
+  AddCase([TTestFatherInfraestructure]);
   AddCase([TTestSonInfraestructure]);
   AddCase([TTestFamilyInfraestructure]);
 end;
