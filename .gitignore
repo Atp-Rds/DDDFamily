@@ -1,0 +1,14 @@
+# Ignore folder named '__history'
+__history/
+__recovery/
+exe/
+dcu/
+
+# Ignore extension files 
+*.dsk
+*.~dsk
+*.local
+*.identcache
+*.stat
+*.dcu
+*.~dcu
