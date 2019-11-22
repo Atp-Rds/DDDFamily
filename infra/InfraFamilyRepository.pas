@@ -17,6 +17,8 @@ uses
   DomFatherCQRS,
   DomSonCQRS,
   DomFamilyCQRS,
+  DomFamilyInterfaces,
+  DomFamilyServices,
   DomFamilyTypes,
 
   InfraFamilyTypes,
@@ -247,6 +249,7 @@ const
 var
   cmd: IDomFamilyCommand;
   cmd2: IDomMotherCommand;
+  cmd3: IDomFatherCommand;
   cmd4: IDomSonCommand;
   //qry: IDomFamilyQuery;
   entity: TFamily;
@@ -264,6 +267,9 @@ var
   aChecked : Boolean;
   aMotherIdNumber: Cardinal;
   aMotherName: RawUTF8;
+
+  aFamMng :IFamilyManager;
+
 begin
   with test do
   begin
@@ -275,6 +281,7 @@ begin
 
     Check(Rest.Services.Resolve(IDomFamilyCommand, cmd));
     Check(Rest.Services.Resolve(IDomMotherCommand, cmd2));
+    Check(Rest.Services.Resolve(IDomFatherCommand, cmd3));
     Check(Rest.Services.Resolve(IDomSonCommand, cmd4));
     try
       aPrefix:='Hello';
@@ -322,37 +329,12 @@ begin
       Check(cqrsSuccess = cmd.Update(entity));
       Check(cqrsSuccess = cmd.Commit);
 
-
-           /// Change Mother Name, apply to all Aggregates: May be in a Business logic
-      aMotherIdNumber := 3;
-      aMotherName := 'Mother3';
-      Check(cqrsSuccess = cmd2.SelectAllByMotherIdNumber( aMotherIdNumber));
-      Check(1 = cmd2.GetCount);
-      Check(cqrsSuccess = cmd2.GetNext(entity2));
-      entity2.Name := 'MotherNameChanges';
-      aCQRSRes := cmd2.Update(entity2);
-      Check(cqrsSuccess = cmd2.Commit); // Mother Aggregate
-
-      aChecked := (cqrsSuccess = aCQRSRes);
-      Check(aChecked);
-      if (aChecked) then /// Apply to others aggregates
-      begin
-                // Select Son by Mother IdNumber
-        cmd4.SelectAllByMotherIdNumber(aMotherIdNumber);
-        Check(cqrsSuccess = cmd4.GetNext(entity4));
-        entity4.AssignMother( entity2 );
-//        entity4.Mother.Assign( entity2 );
-        Check(cqrsSuccess = cmd4.Update(entity4));
-        Check(cqrsSuccess = cmd4.Commit); // Son Aggregate
-
-                // Select Family by Mother IdNumber
-        cmd.SelectAllByMotherIdNumber(aMotherIdNumber);
-        Check(cqrsSuccess = cmd.GetNext(entity));
-        entity.AssignMother(entity2);
-        entity.Son.AssignMother(entity2);
-        Check(cqrsSuccess = cmd.Update(entity));
-        Check(cqrsSuccess = cmd.Commit);  // Family Aggregate
-
+               /// Business Logic
+      aFamMng := TFamilyManager.Create( cmd2,cmd3,cmd4,cmd );
+      for i := 1 to MAX do begin
+        UInt32ToUtf8(i, iText);
+        aChecked := aFamMng.ChangeMotherName( i, 'MotherName'+iText+'Changes');
+        Check(aChecked);
       end;
 
     finally
@@ -433,6 +415,10 @@ begin
       RestServer.ServiceContainer.InjectResolver([TInfraRepoMotherFactory.Create(RestServer)],true);
       RestServer.ServiceContainer.InjectResolver([TInfraRepoFatherFactory.Create(RestServer)],true);
       RestServer.ServiceContainer.InjectResolver([TInfraRepoSonFactory.Create(RestServer)],true);
+
+      if RestServer is TSQLRestServerDB then
+        TSQLRestServerDB(RestServer).ServiceDefine(TFamilyManager,[IFamilyManager],sicClientDriven);
+
     end;
 
     if not infraNested

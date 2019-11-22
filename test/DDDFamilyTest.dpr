@@ -15,6 +15,8 @@ uses
   DomFatherCQRS in '..\dom\DomFatherCQRS.pas',
   DomSonCQRS in '..\dom\DomSonCQRS.pas',
   DomFamilyCQRS in '..\dom\DomFamilyCQRS.pas',
+  DomFamilyInterfaces in '..\dom\DomFamilyInterfaces.pas',
+  DomFamilyServices in '..\dom\DomFamilyServices.pas',
 
   //Infraestructure
   InfraFamilyTypes in '..\infra\InfraFamilyTypes.pas',
@@ -62,6 +64,8 @@ end.
 //  DomFatherCQRS in '..\dom\DomFatherCQRS.pas',
 //  DomSonCQRS in '..\dom\DomSonCQRS.pas',
 //  DomFamilyCQRS in '..\dom\DomFamilyCQRS.pas',
+//  DomFamilyInterfaces in '..\dom\DomFamilyInterfaces.pas',
+//  DomFamilyServices in '..\dom\DomFamilyServices.pas',
 //
 //  //Infraestructure
 //  InfraFamilyTypes in '..\infra\InfraFamilyTypes.pas',
@@ -90,5 +94,3 @@ end.
 //  TSynLogTestLog := TSQLLog; // share the same log file with the whole mORMot
 //  TTestAllMain.RunAsConsole('DDD Family Automated Tests',LOG_VERBOSE);
 //end.
-
-

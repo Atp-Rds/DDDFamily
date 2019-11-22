@@ -81,6 +81,8 @@
         <DCCReference Include="..\dom\DomFatherCQRS.pas"/>
         <DCCReference Include="..\dom\DomSonCQRS.pas"/>
         <DCCReference Include="..\dom\DomFamilyCQRS.pas"/>
+        <DCCReference Include="..\dom\DomFamilyInterfaces.pas"/>
+        <DCCReference Include="..\dom\DomFamilyServices.pas"/>
         <DCCReference Include="..\infra\InfraFamilyTypes.pas"/>
         <DCCReference Include="..\infra\InfraFamilyTest.pas"/>
         <DCCReference Include="..\infra\InfraMotherRepository.pas"/>
