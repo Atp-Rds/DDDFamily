@@ -13,6 +13,7 @@ type
   IDomFamilyQuery = interface(ICQRSService)
    ['{625008F8-FEE2-43F5-938D-4FE51F66A8AC}']
     function SelectAllByFamilyName(const aFamilyName: TFamilyName): TCQRSResult;
+    function SelectAllByMotherIdNumber(const aMotherIdNumber: TMotherIdNumber): TCQRSResult;
     function SelectAll: TCQRSResult;
     function Get(out aAggregate: TFamily): TCQRSResult;
     function GetAll(out aAggretates: TFamilyObjArray): TCQRSResult;

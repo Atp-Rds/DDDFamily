@@ -31,29 +31,57 @@ type
   TSQLRecordFamily = class(TSQLRecord)
   protected
     fFamilyName: RawUTF8; // TFamilyName
-    fMother: RawUTF8; // TMotherName
-    fFather: RawUTF8; // TFatherName
+
+         // TMother
+    fMother_IdNumber: Int64; //TMotherIdNumber
+    fMother_Name: RawUTF8; // TMotherName
+
+         // TFather
+    fFather_IdNumber: Int64; // TFatherIdNumber
+    fFather_Name: RawUTF8; // TFatherName
+
+         // TSon
+    fSon_IdNumber: Int64; // TSonIdNumber
     fSon_Name: RawUTF8; // TSonName
-    fSon_Mother: RawUTF8; // TMotherName
-    fSon_Father: RawUTF8; // TFatherName
+    fSon_Mother_IdNumber: Int64; // TMotherIdNumber
+    fSon_Mother_Name: RawUTF8; // TMotherName
+    fSon_Father_IdNumber: Int64; // TFatherIdNumber
+    fSon_Father_Name: RawUTF8; // TFatherName
+
   published
     /// maps TFamily.FamilyName (TFamilyName)
     property FamilyName: RawUTF8 read fFamilyName write fFamilyName stored AS_UNIQUE;
+
+    /// maps TFamily.Mother.IdNumber (TMotherIdNumber)
+    property Mother_IdNumber: Int64 read fMother_IdNumber write fMother_IdNumber;
     /// maps TFamily.Mother.Name (TMotherName)
-    property Mother: RawUTF8 read fMother write fMother;
+    property Mother_Name: RawUTF8 read fMother_Name write fMother_Name;
+
+    /// maps TFamily.Father.IdNumber (TFatherIdNumber)
+    property Father_IdNumber: Int64 read fFather_IdNumber write fFather_IdNumber;
     /// maps TFamily.Father.Name (TFatherName)
-    property Father: RawUTF8 read fFather write fFather;
+    property Father_Name: RawUTF8 read fFather_Name write fFather_Name;
+
+    /// maps TFamily.Son.IdNumber (TSonIdNumber)
+    property Son_IdNumber: Int64 read fSon_IdNumber write fSon_IdNumber;
     /// maps TFamily.Son.Name (TSonName)
     property Son_Name: RawUTF8 read fSon_Name write fSon_Name;
+
+    /// maps TFamily.Son.Mother.IdNumber (TMotherIdNumber)
+    property Son_Mother_IdNumber: Int64 read fSon_Mother_IdNumber write fSon_Mother_IdNumber;
     /// maps TFamily.Son.Mother.Name (TMotherName)
-    property Son_Mother: RawUTF8 read fSon_Mother write fSon_Mother;
+    property Son_Mother_Name: RawUTF8 read fSon_Mother_Name write fSon_Mother_Name;
+
+    /// maps TFamily.Son.Father.IdNumber (TFatherIdNumber)
+    property Son_Father_IdNumber: Int64 read fSon_Father_IdNumber write fSon_Father_IdNumber;
     /// maps TFamily.Son.Father.Name (TFatherName)
-    property Son_Father: RawUTF8 read fSon_Father write fSon_Father;
+    property Son_Father_Name: RawUTF8 read fSon_Father_Name write fSon_Father_Name;
   end;
 
   TInfraRepoFamily = class(TDDDRepositoryRestCommand, IDomFamilyQuery, IDomFamilyCommand)
   public
     function SelectAllByFamilyName(const aFamilyName: TFamilyName): TCQRSResult;
+    function SelectAllByMotherIdNumber(const aMotherIdNumber: TMotherIdNumber): TCQRSResult;
     function SelectAll: TCQRSResult;
     function Get(out aAggregate: TFamily): TCQRSResult;
     function GetAll(out aAggregates: TFamilyObjArray): TCQRSResult;
@@ -112,6 +140,11 @@ begin
   Result := ORMSelectAll('FamilyName=?', [aFamilyName], (''=aFamilyName));
 end;
 
+function TInfraRepoFamily.SelectAllByMotherIdNumber(const aMotherIdNumber: TMotherIdNumber): TCQRSResult;
+begin
+  Result := ORMSelectAll('Mother_IdNumber=?', [aMotherIdNumber], (aMotherIdNumber<1));
+end;
+
 function TInfraRepoFamily.Update(const aUpdatedAggregate: TFamily): TCQRSResult;
 begin
   Result := ORMUpdate(aUpdatedAggregate);
@@ -144,6 +177,7 @@ var
   i: Integer;
   //entityCount: Integer;
   iText: RawUTF8;
+  aCQRSRes : TCQRSResult;
 begin
   with test do
   begin
@@ -159,12 +193,19 @@ begin
       begin
         UInt32ToUtf8(i,iText);
         entity.FamilyName := 'Family' + iText;
+
+        entity2.IdNumber := i;
         entity2.Name := 'Mother' + iText;
+
+        entity3.IdNumber := i;
         entity3.Name := 'Father' + iText;
+
+        entity4.IdNumber := i;
         entity4.Name := 'Son' + iText;
         entity4.AssignParents(entity2,entity3);
         entity.AssignMembers(entity2,entity3,entity4);
-        Check(cqrsSuccess = cmd.Add(entity));
+        aCQRSRes := cmd.Add(entity);
+        Check(cqrsSuccess = aCQRSRes);
       end;
       Check(cqrsSuccess = cmd.Commit);
 
@@ -205,6 +246,7 @@ const
   MAX = MAX_INFRA_RTESTS_LOOP;
 var
   cmd: IDomFamilyCommand;
+  cmd2: IDomMotherCommand;
   cmd4: IDomSonCommand;
   //qry: IDomFamilyQuery;
   entity: TFamily;
@@ -218,6 +260,10 @@ var
   //entityCount: Integer;
   iText: RawUTF8;
   aPrefix: RawUTF8;
+  aCQRSRes : TCQRSResult;
+  aChecked : Boolean;
+  aMotherIdNumber: Cardinal;
+  aMotherName: RawUTF8;
 begin
   with test do
   begin
@@ -228,6 +274,7 @@ begin
     entity4 := TSon.Create;
 
     Check(Rest.Services.Resolve(IDomFamilyCommand, cmd));
+    Check(Rest.Services.Resolve(IDomMotherCommand, cmd2));
     Check(Rest.Services.Resolve(IDomSonCommand, cmd4));
     try
       aPrefix:='Hello';
@@ -236,20 +283,17 @@ begin
         UInt32ToUtf8(i,iText);
         entity.FamilyName := 'Family' + iText;
 
-           // Get Mother
+           // Get Son
         Check(cqrsSuccess = cmd4.SelectAllBySonName(aPrefix+'Son'+iText));
         Check(1 = cmd4.GetCount);
         Check(cqrsSuccess = cmd4.GetNext(entity4));
 
-//        entity2.Name := 'Mother' + iText;
-//        entity3.Name := 'Father' + iText;
-//        entity4.Name := 'Son' + iText;
         entity4.Mother.Assign( entity2 );
         entity4.Father.Assign( entity3 );
 
-//        entity4.AssignParents(entity2,entity3);
         entity.AssignMembers(entity2,entity3,entity4);
-        Check(cqrsSuccess = cmd.Add(entity));
+        aCQRSRes := cmd.Add(entity);
+        Check(cqrsSuccess = aCQRSRes);
 
         if aPrefix<>''
           then aPrefix:='';
@@ -274,13 +318,42 @@ begin
       Check(1 = cmd.GetCount);
       Check(cqrsSuccess = cmd.GetNext(entity));
 
-      entity.FamilyName := 'Hello1';
+      entity.FamilyName := 'HelloFamily1';
       Check(cqrsSuccess = cmd.Update(entity));
       Check(cqrsSuccess = cmd.Commit);
 
-           /// Change Mother Name, apply to all aggregates
 
+           /// Change Mother Name, apply to all Aggregates: May be in a Business logic
+      aMotherIdNumber := 3;
+      aMotherName := 'Mother3';
+      Check(cqrsSuccess = cmd2.SelectAllByMotherIdNumber( aMotherIdNumber));
+      Check(1 = cmd2.GetCount);
+      Check(cqrsSuccess = cmd2.GetNext(entity2));
+      entity2.Name := 'MotherNameChanges';
+      aCQRSRes := cmd2.Update(entity2);
+      Check(cqrsSuccess = cmd2.Commit); // Mother Aggregate
 
+      aChecked := (cqrsSuccess = aCQRSRes);
+      Check(aChecked);
+      if (aChecked) then /// Apply to others aggregates
+      begin
+                // Select Son by Mother IdNumber
+        cmd4.SelectAllByMotherIdNumber(aMotherIdNumber);
+        Check(cqrsSuccess = cmd4.GetNext(entity4));
+        entity4.AssignMother( entity2 );
+//        entity4.Mother.Assign( entity2 );
+        Check(cqrsSuccess = cmd4.Update(entity4));
+        Check(cqrsSuccess = cmd4.Commit); // Son Aggregate
+
+                // Select Family by Mother IdNumber
+        cmd.SelectAllByMotherIdNumber(aMotherIdNumber);
+        Check(cqrsSuccess = cmd.GetNext(entity));
+        entity.AssignMother(entity2);
+        entity.Son.AssignMother(entity2);
+        Check(cqrsSuccess = cmd.Update(entity));
+        Check(cqrsSuccess = cmd.Commit);  // Family Aggregate
+
+      end;
 
     finally
       ObjArrayClear(entitys);

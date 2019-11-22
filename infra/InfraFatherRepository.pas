@@ -23,14 +23,18 @@ type
   /// ORM class corresponding to TFather DDD aggregate
   TSQLRecordFather = class(TSQLRecord)
   protected
+    fIdNumber: Int64; // TFatherIdNumber
     fName: RawUTF8; // TFatherName
   published
+    /// maps TFather.IdNumber (TFatherIdNumber)
+    property IdNumber: Int64 read fIdNumber write fIdNumber stored AS_UNIQUE;
     /// maps TFather.Name (TFatherName)
     property Name: RawUTF8 read fName write fName;
   end;
 
   TInfraRepoFather = class(TDDDRepositoryRestCommand, IDomFatherQuery, IDomFatherCommand)
   public
+    function SelectAllByFatherIdNumber(const aFatherIdNumber: TFatherIdNumber): TCQRSResult;
     function SelectAllByFatherName(const aFatherName: TFatherName): TCQRSResult;
     function SelectAll: TCQRSResult;
     function Get(out aAggregate: TFather): TCQRSResult;
@@ -84,6 +88,11 @@ begin
   Result := ORMSelectAll('', []);
 end;
 
+function TInfraRepoFather.SelectAllByFatherIdNumber(const aFatherIdNumber: TFatherIdNumber): TCQRSResult;
+begin
+  Result := ORMSelectAll('IdNumber=?', [aFatherIdNumber], (aFatherIdNumber<1));
+end;
+
 function TInfraRepoFather.SelectAllByFatherName(const aFatherName: TFatherName): TCQRSResult;
 begin
   Result := ORMSelectAll('Name=?', [aFatherName], (''=aFatherName));
@@ -127,6 +136,7 @@ begin
       for i := 1 to MAX do
       begin
         UInt32ToUtf8(i,iText);
+        entity.IdNumber := i;
         entity.Name := 'Father' + iText;
         Check(cqrsSuccess = cmd.Add(entity));
       end;
@@ -141,6 +151,7 @@ begin
         Check(1 = cmd.GetCount);
         Check(cqrsSuccess = cmd.GetNext(entity));
         Check('Father'+iText = entity.Name);
+        Check(i = entity.IdNumber);
       end;
 
       Check(cqrsSuccess = cmd.SelectAll());

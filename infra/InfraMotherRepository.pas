@@ -23,14 +23,18 @@ type
   /// ORM class corresponding to TMother DDD aggregate
   TSQLRecordMother = class(TSQLRecord)
   protected
+    fIdNumber : Int64; //TMotherIdNumber;
     fName: RawUTF8; // TMotherName
   published
+    /// maps TMother.IdNumber (TMotherIdNumber)
+    property IdNumber: Int64 read fIdNumber write fIdNumber stored AS_UNIQUE;
     /// maps TMother.Name (TMotherName)
     property Name: RawUTF8 read fName write fName;
   end;
 
   TInfraRepoMother = class(TDDDRepositoryRestCommand, IDomMotherQuery, IDomMotherCommand)
   public
+    function SelectAllByMotherIdNumber(const aMotherIdNumber: TMotherIdNumber): TCQRSResult;
     function SelectAllByMotherName(const aMotherName: TMotherName): TCQRSResult;
     function SelectAll: TCQRSResult;
     function Get(out aAggregate: TMother): TCQRSResult;
@@ -84,6 +88,11 @@ begin
   Result := ORMSelectAll('', []);
 end;
 
+function TInfraRepoMother.SelectAllByMotherIdNumber(const aMotherIdNumber: TMotherIdNumber): TCQRSResult;
+begin
+  Result := ORMSelectAll('IdNumber=?', [aMotherIdNumber], (aMotherIdNumber<1));
+end;
+
 function TInfraRepoMother.SelectAllByMotherName(const aMotherName: TMotherName): TCQRSResult;
 begin
   Result := ORMSelectAll('Name=?', [aMotherName], (''=aMotherName));
@@ -127,6 +136,7 @@ begin
       for i := 1 to MAX do
       begin
         UInt32ToUtf8(i,iText);
+        entity.IdNumber := i;
         entity.Name := 'Mother' + iText;
         Check(cqrsSuccess = cmd.Add(entity));
       end;
@@ -141,6 +151,7 @@ begin
         Check(1 = cmd.GetCount);
         Check(cqrsSuccess = cmd.GetNext(entity));
         Check('Mother'+iText = entity.Name);
+        Check(i = entity.IdNumber);
       end;
 
       Check(cqrsSuccess = cmd.SelectAll());

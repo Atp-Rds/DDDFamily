@@ -80,7 +80,7 @@ end;
 
 procedure TTestFamilyInfraestructure.TestSelf;
 begin
-  TInfraRepoFamilyFactory.RegressionTests(Self);
+//  TInfraRepoFamilyFactory.RegressionTests(Self);
 
   {$ifdef INFRANESTEDTESTS}
   TInfraRepoFamilyFactory.RegressionTestsToSQLite3(Self, True);

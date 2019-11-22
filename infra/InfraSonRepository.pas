@@ -27,21 +27,35 @@ type
   /// ORM class corresponding to TSon DDD aggregate
   TSQLRecordSon = class(TSQLRecord)
   protected
+    fIdNumber: Int64; //TSonIdNumber;
     fName: RawUTF8; // TSonName
-    fMother: RawUTF8; // TMotherName
-    fFather: RawUTF8; // TFatherName
+
+    fMother_IdNumber: Int64; // TMotherIdNumber
+    fMother_Name: RawUTF8; // TMotherName
+
+    fFather_IdNumber: Int64; // TFatherIdNumber
+    fFather_Name: RawUTF8; // TFatherName
   published
+    /// maps TSon.IdNumber (TSonIdNumber)
+    property IdNumber: Int64 read fIdNumber write fIdNumber stored AS_UNIQUE;
     /// maps TSon.Name (TSonName)
     property Name: RawUTF8 read fName write fName;
+
+    /// maps TSon.Mother.IdNumber (TMotherIdNumber)
+    property Mother_IdNumber: Int64 read fMother_IdNumber write fMother_IdNumber;
     /// maps TSon.Mother.Name (TMotherName)
-    property Mother: RawUTF8 read fMother write fMother;
+    property Mother_Name: RawUTF8 read fMother_Name write fMother_Name;
+
+    /// maps TSon.Father.IdNumber (TFatherIdNumber)
+    property Father_IdNumber: Int64 read fFather_IdNumber write fFather_IdNumber;
     /// maps TSon.Father.Name (TFatherName)
-    property Father: RawUTF8 read fFather write fFather;
+    property Father_Name: RawUTF8 read fFather_Name write fFather_Name;
   end;
 
   TInfraRepoSon = class(TDDDRepositoryRestCommand, IDomSonQuery, IDomSonCommand)
   public
     function SelectAllBySonName(const aSonName: TSonName): TCQRSResult;
+    function SelectAllByMotherIdNumber(const aMotherIdNumber: TMotherIdNumber): TCQRSResult;
     function SelectAll: TCQRSResult;
     function Get(out aAggregate: TSon): TCQRSResult;
     function GetAll(out aAggregates: TSonObjArray): TCQRSResult;
@@ -99,6 +113,11 @@ begin
   Result := ORMSelectAll('Name=?', [aSonName], (''=aSonName));
 end;
 
+function TInfraRepoSon.SelectAllByMotherIdNumber(const aMotherIdNumber: TMotherIdNumber): TCQRSResult;
+begin
+  Result := ORMSelectAll('Mother_IdNumber=?', [aMotherIdNumber], (aMotherIdNumber<1));
+end;
+
 function TInfraRepoSon.Update(const aUpdatedAggregate: TSon): TCQRSResult;
 begin
   Result := ORMUpdate(aUpdatedAggregate);
@@ -128,7 +147,6 @@ var
   //entityCount: Integer;
   iText: RawUTF8;
   aCQRSRes : TCQRSResult;
-
 begin
   with test do
   begin
@@ -142,9 +160,15 @@ begin
       for i := 1 to MAX do
       begin
         UInt32ToUtf8(i,iText);
+        entity.IdNumber := i;
         entity.Name := 'Son' + iText;
+
+        entity2.IdNumber := i;
         entity2.Name := 'Mother' + iText;
+
+        entity3.IdNumber := i;
         entity3.Name := 'Father' + iText;
+
         entity.AssignParents(entity2,entity3);
         Check(cqrsSuccess = cmd.Add(entity));
       end;
@@ -160,6 +184,7 @@ begin
         Check(1 = cmd.GetCount);
         Check(cqrsSuccess = cmd.GetNext(entity));
         Check('Son'+iText = entity.Name);
+        Check(i = entity.IdNumber);
       end;
 
       Check(cqrsSuccess = cmd.SelectAll());
@@ -200,7 +225,6 @@ var
   //entityCount: Integer;
   iText: RawUTF8;
   aCQRSRes : TCQRSResult;
-  aPrefix: RawUTF8;
 begin
   with test do
   begin
@@ -213,27 +237,26 @@ begin
     Check(Rest.Services.Resolve(IDomMotherCommand, cmd2));
     Check(Rest.Services.Resolve(IDomFatherCommand, cmd3));
     try
-      aPrefix:='Hello';
       for i := 1 to MAX do
       begin
         UInt32ToUtf8(i,iText);
+        entity.IdNumber := i;
         entity.Name := 'Son' + iText;
 
            // Get Mother
-        Check(cqrsSuccess = cmd2.SelectAllByMotherName(aPrefix+'Mother'+iText));
+        Check(cqrsSuccess = cmd2.SelectAllByMotherIdNumber(i));
         Check(1 = cmd2.GetCount);
         Check(cqrsSuccess = cmd2.GetNext(entity2));
 
            // Get Father
-        Check(cqrsSuccess = cmd3.SelectAllByFatherName(aPrefix+'Father'+iText));
+        Check(cqrsSuccess = cmd3.SelectAllByFatherIdNumber(i));
         Check(1 = cmd3.GetCount);
         Check(cqrsSuccess = cmd3.GetNext(entity3));
 
         entity.AssignParents(entity2,entity3);
-        Check(cqrsSuccess = cmd.Add(entity));
+        aCQRSRes := cmd.Add(entity);
+        Check(cqrsSuccess = aCQRSRes);
 
-        if aPrefix<>''
-          then aPrefix:='';
       end;
       aCQRSRes := cmd.Commit;
       Check(cqrsSuccess = aCQRSRes);

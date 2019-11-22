@@ -13,6 +13,7 @@ type
 
   IDomFatherQuery = interface(ICQRSService)
    ['{4BC1173D-923A-4069-B58E-F1933971045A}']
+    function SelectAllByFatherIdNumber(const aFatherIdNumber: TFatherIdNumber): TCQRSResult;
     function SelectAllByFatherName(const aFatherName: TFatherName): TCQRSResult;
     function SelectAll: TCQRSResult;
     function Get(out aAggregate: TFather): TCQRSResult;
