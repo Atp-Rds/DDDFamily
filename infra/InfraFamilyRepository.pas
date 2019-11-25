@@ -333,7 +333,7 @@ begin
       aFamMng := TFamilyManager.Create( cmd2,cmd3,cmd4,cmd );
       for i := 1 to MAX do begin
         UInt32ToUtf8(i, iText);
-        aChecked := aFamMng.ChangeMotherName( i, 'MotherName'+iText+'Changes');
+        aChecked := aFamMng.ChangeMothersName( i, 'MotherName'+iText+'Changes');
         Check(aChecked);
       end;
 

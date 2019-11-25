@@ -12,7 +12,7 @@ type
 
   IFamilyManager = interface(IInvokable)
    ['{AB4A7C81-528B-4BB3-A3AC-2009B7B2088A}']
-    function ChangeMotherName (const aMotherIdNumber: TMotherIdNumber; const aNewMotherName : TMotherName): Boolean;
+    function ChangeMothersName (const aMotherIdNumber: TMotherIdNumber; const aNewMotherName : TMotherName): Boolean;
   end;
 
 

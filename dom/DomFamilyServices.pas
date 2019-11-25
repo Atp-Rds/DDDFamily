@@ -30,7 +30,7 @@ type
                           aIDFamilyCmd: IDomFamilyCommand ); reintroduce;
 
       // IFamilyManager methods below
-      function ChangeMotherName (const aMotherIdNumber: TMotherIdNumber; const aNewMotherName : TMotherName): Boolean;
+      function ChangeMothersName (const aMotherIdNumber: TMotherIdNumber; const aNewMotherName : TMotherName): Boolean;
 
   end;
 
@@ -49,7 +49,7 @@ begin
 end;
 
 
-function TFamilyManager.ChangeMotherName(const aMotherIdNumber: TMotherIdNumber;
+function TFamilyManager.ChangeMothersName(const aMotherIdNumber: TMotherIdNumber;
   const aNewMotherName: TMotherName): Boolean;
 var aCQRSRes : TCQRSResult;
     aRes : Boolean;
@@ -66,7 +66,7 @@ begin
   aFamily := TFamily.Create;
 
   Try
-             ///// Change Mother Name, apply to all Aggregates
+             ///// Change Mother's Name, and apply to all Aggregates
 
              // Apply to Mother Aggregate
     aCQRSRes := fMotherRepo.SelectAllByMotherIdNumber( aMotherIdNumber);

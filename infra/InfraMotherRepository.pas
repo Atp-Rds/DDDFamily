@@ -122,7 +122,7 @@ var
   entity: TMother;
   entitys: TMotherObjArray;
   i: Integer;
-  //entityCount: Integer;
+  entityCount: Integer;
   iText: RawUTF8;
   aCQRSRes : TCQRSResult;
 
@@ -148,24 +148,29 @@ begin
         UInt32ToUtf8(i, iText);
         aCQRSRes := cmd.SelectAllByMotherName('Mother' + iText);
         Check(cqrsSuccess = aCQRSRes );
-        Check(1 = cmd.GetCount);
-        Check(cqrsSuccess = cmd.GetNext(entity));
+        entityCount := cmd.GetCount;
+        Check(1 = entityCount );
+        aCQRSRes := cmd.GetNext(entity);
+        Check(cqrsSuccess = aCQRSRes);
         Check('Mother'+iText = entity.Name);
         Check(i = entity.IdNumber);
       end;
 
       Check(cqrsSuccess = cmd.SelectAll());
-      Check(MAX = cmd.GetCount);
+      entityCount := cmd.GetCount;
+      Check(MAX = entityCount);
       Check(cqrsSuccess = cmd.GetAll(entitys));
       Check(MAX = high(entitys)+1 );
 
       Check(cqrsSuccess = cmd.SelectAllByMotherName('Mother1'));
-      Check(1 = cmd.GetCount);
+      entityCount := cmd.GetCount;
+      Check(1 = entityCount );
       Check(cqrsSuccess = cmd.GetNext(entity));
 
       entity.Name := 'HelloMother1';
       Check(cqrsSuccess = cmd.Update(entity));
       Check(cqrsSuccess = cmd.Commit);
+
     finally
       ObjArrayClear(entitys);
       entity.Free;
