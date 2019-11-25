@@ -1,5 +1,5 @@
-mORMot test project: DDD persistence sample using ORM, depending on Aggregate
-==============================================================
+mORMot test project: DDD persistence sample using ORM
+======================================================
 
 By atpRads, based on
 
