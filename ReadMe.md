@@ -37,9 +37,12 @@ The sample project, which is a first approximation (and is "under construction",
 
 - DDD with mORMot: with clean architecture, with proper isolation and uncoupling, with clean folder hierarchy, based on EKON21 & EKON 22 presentations, and some project samples (like "Sample 35 - Practical DDD"), by ab (synopse.info)
 
-(see ab's EKON presentations at http://blog.synopse.info/post/2017/10/24/EKON-21-Presentation and http://blog.synopse.info/post/2018/11/12/EKON-22-Slides-and-Code)
+     (see ab's EKON presentations at 
+          http://blog.synopse.info/post/2017/10/24/EKON-21-Presentation 
+          http://blog.synopse.info/post/2018/11/12/EKON-22-Slides-and-Code)
 
-- The relationships between family members in a not polluted and isolated domain, with clean architecture: clean DDD objects, using PODO classes, following the Ubiquitous Language (see project's folder hierarchy, and some units like \dom\DomFamilyTypes.pas)
+- The relationships between family members in a not polluted and isolated domain, with clean architecture: 
+     clean DDD objects, using PODO classes, following the Ubiquitous Language (see project's folder hierarchy, and some units like \dom\DomFamilyTypes.pas)
 
 - How to store Aggregate as a whole, using mORMot ORM capabilities (which allows persistence ignorance too): Depending on Context (Mother, Father, Son or Family), aggregates stored as a whole (see regression tests at \infra\Infra*Repository.pas)
 
