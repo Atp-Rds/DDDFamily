@@ -3,7 +3,10 @@ mORMot test project: DDD persistence sample using ORM, depending on Aggregate
 
 By atpRads, based on
 
-- mORMot framework by Synopse: https://synopse.info/fossil/wiki?name=SQLite3+Framework
+- mORMot framework by Synopse:
+
+     https://synopse.info/fossil/wiki?name=SQLite3+Framework
+     
 - mORMot samples:
     "Sample 35 - Practical DDD" By ab
     "Simple DDD persistence sample using ORM" By uian2000
